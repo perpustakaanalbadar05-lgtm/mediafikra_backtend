@@ -17,11 +17,16 @@ class TestimonialController extends Controller
         $data = $request->validate([
             'nama' => 'required|string|max:255',
             'jabatan' => 'nullable|string|max:255',
-            'foto' => 'nullable|string',
+            'foto' => 'nullable|image|max:2048',
             'rating' => 'required|integer|min:1|max:5',
             'isi_review' => 'required|string',
             'status_publish' => 'boolean',
         ]);
+
+        if ($request->hasFile('foto')) {
+            $path = $request->file('foto')->store('testimonials', 'public');
+            $data['foto'] = '/storage/' . $path;
+        }
 
         return response()->json(Testimonial::create($data), 201);
     }
@@ -36,11 +41,19 @@ class TestimonialController extends Controller
         $data = $request->validate([
             'nama' => 'sometimes|string|max:255',
             'jabatan' => 'nullable|string|max:255',
-            'foto' => 'nullable|string',
+            'foto' => 'nullable|image|max:2048',
             'rating' => 'sometimes|integer|min:1|max:5',
             'isi_review' => 'sometimes|string',
             'status_publish' => 'boolean',
         ]);
+
+        if ($request->hasFile('foto')) {
+            if ($testimonial->foto && str_starts_with($testimonial->foto, '/storage/')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete(str_replace('/storage/', '', $testimonial->foto));
+            }
+            $path = $request->file('foto')->store('testimonials', 'public');
+            $data['foto'] = '/storage/' . $path;
+        }
 
         $testimonial->update($data);
         return response()->json($testimonial);

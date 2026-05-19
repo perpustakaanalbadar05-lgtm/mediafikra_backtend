@@ -24,10 +24,15 @@ class PromoController extends Controller
         $data = $request->validate([
             'judul' => 'required|string|max:255',
             'isi' => 'required|string',
-            'thumbnail' => 'nullable|string',
+            'thumbnail' => 'nullable|image|max:2048',
             'status_publish' => 'boolean',
             'type' => 'required|in:promo,berita',
         ]);
+
+        if ($request->hasFile('thumbnail')) {
+            $path = $request->file('thumbnail')->store('promos', 'public');
+            $data['thumbnail'] = '/storage/' . $path;
+        }
 
         $data['slug'] = Str::slug($request->judul) . '-' . uniqid();
         return response()->json(Promo::create($data), 201);
@@ -43,10 +48,18 @@ class PromoController extends Controller
         $data = $request->validate([
             'judul' => 'sometimes|string|max:255',
             'isi' => 'sometimes|string',
-            'thumbnail' => 'nullable|string',
+            'thumbnail' => 'nullable|image|max:2048',
             'status_publish' => 'boolean',
             'type' => 'sometimes|in:promo,berita',
         ]);
+
+        if ($request->hasFile('thumbnail')) {
+            if ($promo->thumbnail && str_starts_with($promo->thumbnail, '/storage/')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete(str_replace('/storage/', '', $promo->thumbnail));
+            }
+            $path = $request->file('thumbnail')->store('promos', 'public');
+            $data['thumbnail'] = '/storage/' . $path;
+        }
 
         if (isset($data['judul'])) {
             $data['slug'] = Str::slug($data['judul']) . '-' . $promo->id;
