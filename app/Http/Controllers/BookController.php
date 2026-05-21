@@ -32,6 +32,7 @@ class BookController extends Controller
         $data = $request->validate([
             'judul' => 'required|string|max:255',
             'deskripsi' => 'nullable|string',
+            'sinopsis' => 'nullable|string',
             'harga' => 'required|integer|min:0',
             'stok' => 'required|integer|min:0',
             'cover_image' => 'nullable|image|max:2048', // 2MB max
@@ -67,6 +68,7 @@ class BookController extends Controller
         $data = $request->validate([
             'judul' => 'sometimes|string|max:255',
             'deskripsi' => 'nullable|string',
+            'sinopsis' => 'nullable|string',
             'harga' => 'sometimes|integer|min:0',
             'stok' => 'sometimes|integer|min:0',
             'cover_image' => 'nullable|image|max:2048',

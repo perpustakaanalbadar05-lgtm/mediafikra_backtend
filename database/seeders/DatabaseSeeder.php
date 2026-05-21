@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
             [
                 'judul' => 'Menulis Buku Pertamamu',
                 'deskripsi' => 'Panduan lengkap bagi penulis pemula yang ingin menerbitkan buku pertama mereka. Dari ide hingga cetakan.',
+                'sinopsis' => "Buku ini adalah panduan komprehensif bagi Anda yang selama ini memendam impian menjadi seorang penulis namun bingung harus mulai dari mana. Dengan bahasa yang ringan dan aplikatif, penulis menguraikan tahapan-tahapan krusial mulai dari penggalian ide, penyusunan kerangka karangan, hingga proses teknis menulis draft pertama.\n\nTidak hanya sekadar teknik menulis, buku ini juga mengupas tuntas seluk-beluk dunia penerbitan di Indonesia. Anda akan diajak memahami perbedaan antara penerbit mayor dan indie, cara mengirimkan naskah yang baik, hingga proses penyuntingan dan layout yang profesional.",
                 'harga' => 85000,
                 'stok' => 50,
                 'cover_image' => null,
