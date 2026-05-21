@@ -10,6 +10,9 @@ use App\Http\Controllers\PromoController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\BookReviewController;
+use App\Http\Controllers\ArticleController;
 
 // ─── PUBLIC ROUTES ───────────────────────────────────────────────────────────
 
@@ -23,6 +26,17 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/books', [BookController::class, 'index']);
 Route::get('/books/{book}', [BookController::class, 'show']);
 Route::get('/books/slug/{slug}', [BookController::class, 'showBySlug']);
+
+// Categories (public)
+Route::get('/categories', [CategoryController::class, 'index']);
+
+// Book Reviews (public)
+Route::get('/reviews', [BookReviewController::class, 'index']);
+Route::post('/reviews', [BookReviewController::class, 'store']);
+
+// Articles (public)
+Route::get('/articles', [ArticleController::class, 'index']);
+Route::get('/articles/{slug}', [ArticleController::class, 'show']);
 
 // Testimonials (public)
 Route::get('/testimonials', [TestimonialController::class, 'index']);
@@ -81,4 +95,24 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Settings (admin)
     Route::post('/admin/settings', [SettingController::class, 'update']);
+    
+    // Categories (admin)
+    Route::post('/admin/categories', [CategoryController::class, 'store']);
+    Route::delete('/admin/categories/{category}', [CategoryController::class, 'destroy']);
+
+    // Book Reviews (admin)
+    Route::delete('/admin/reviews/{bookReview}', [BookReviewController::class, 'destroy']);
+
+    // Articles (admin)
+    Route::post('/admin/articles', [ArticleController::class, 'store']);
+    Route::delete('/admin/articles/{article}', [ArticleController::class, 'destroy']);
+    
+    // Dashboard Stats (admin)
+    Route::get('/admin/dashboard-stats', function () {
+        return response()->json([
+            'total_books' => \App\Models\Book::count(),
+            'total_orders' => \App\Models\Order::count(),
+            'total_articles' => \App\Models\Article::count(),
+        ]);
+    });
 });
