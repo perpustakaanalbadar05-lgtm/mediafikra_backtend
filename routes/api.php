@@ -55,64 +55,70 @@ Route::post('/orders', [OrderController::class, 'store']);
 // ─── PROTECTED ROUTES (require Sanctum token) ─────────────────────────────
 
 Route::middleware('auth:sanctum')->group(function () {
-    // Auth
+    // Auth (All authenticated users)
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/me', [AuthController::class, 'me']);
 
-    // Books (admin)
-    Route::get('/admin/books', [BookController::class, 'adminIndex']);
-    Route::post('/admin/books', [BookController::class, 'store']);
-    Route::put('/admin/books/{book}', [BookController::class, 'update']);
-    Route::delete('/admin/books/{book}', [BookController::class, 'destroy']);
-
-    // Orders (admin)
-    Route::get('/admin/orders', [OrderController::class, 'index']);
-    Route::get('/admin/orders/{order}', [OrderController::class, 'show']);
-    Route::patch('/admin/orders/{order}/status', [OrderController::class, 'updateStatus']);
-
-    // Testimonials (admin)
-    Route::get('/admin/testimonials', [TestimonialController::class, 'adminIndex']);
-    Route::post('/admin/testimonials', [TestimonialController::class, 'store']);
-    Route::put('/admin/testimonials/{testimonial}', [TestimonialController::class, 'update']);
-    Route::delete('/admin/testimonials/{testimonial}', [TestimonialController::class, 'destroy']);
-
-    // Promos (admin)
-    Route::get('/admin/promos', [PromoController::class, 'adminIndex']);
-    Route::post('/admin/promos', [PromoController::class, 'store']);
-    Route::put('/admin/promos/{promo}', [PromoController::class, 'update']);
-    Route::delete('/admin/promos/{promo}', [PromoController::class, 'destroy']);
-
-    // Portfolios (admin)
-    Route::post('/admin/portfolios', [PortfolioController::class, 'store']);
-    Route::put('/admin/portfolios/{portfolio}', [PortfolioController::class, 'update']);
-    Route::delete('/admin/portfolios/{portfolio}', [PortfolioController::class, 'destroy']);
-
-    // Users (admin)
-    Route::get('/admin/users', [UserController::class, 'index']);
-    Route::post('/admin/users', [UserController::class, 'store']);
-    Route::put('/admin/users/{user}', [UserController::class, 'update']);
-    Route::delete('/admin/users/{user}', [UserController::class, 'destroy']);
-
-    // Settings (admin)
-    Route::post('/admin/settings', [SettingController::class, 'update']);
-    
-    // Categories (admin)
-    Route::post('/admin/categories', [CategoryController::class, 'store']);
-    Route::delete('/admin/categories/{category}', [CategoryController::class, 'destroy']);
-
-    // Book Reviews (admin)
-    Route::delete('/admin/reviews/{bookReview}', [BookReviewController::class, 'destroy']);
-
-    // Articles (admin)
-    Route::post('/admin/articles', [ArticleController::class, 'store']);
-    Route::delete('/admin/articles/{article}', [ArticleController::class, 'destroy']);
-    
-    // Dashboard Stats (admin)
+    // Dashboard Stats (All admin users)
     Route::get('/admin/dashboard-stats', function () {
         return response()->json([
             'total_books' => \App\Models\Book::count(),
             'total_orders' => \App\Models\Order::count(),
             'total_articles' => \App\Models\Article::count(),
         ]);
+    });
+
+    // Books & Categories (superadmin, editor)
+    Route::middleware('role:superadmin,editor')->group(function () {
+        Route::get('/admin/books', [BookController::class, 'adminIndex']);
+        Route::post('/admin/books', [BookController::class, 'store']);
+        Route::put('/admin/books/{book}', [BookController::class, 'update']);
+        Route::delete('/admin/books/{book}', [BookController::class, 'destroy']);
+        
+        Route::post('/admin/categories', [CategoryController::class, 'store']);
+        Route::delete('/admin/categories/{category}', [CategoryController::class, 'destroy']);
+    });
+
+    // Orders (superadmin, cs)
+    Route::middleware('role:superadmin,cs')->group(function () {
+        Route::get('/admin/orders', [OrderController::class, 'index']);
+        Route::get('/admin/orders/{order}', [OrderController::class, 'show']);
+        Route::patch('/admin/orders/{order}/status', [OrderController::class, 'updateStatus']);
+    });
+
+    // Content Management: Testimonials, Promos, Portfolios, Articles, Reviews (superadmin, admin, editor)
+    // Editor allowed for articles, Admin Konten allowed for the rest.
+    Route::middleware('role:superadmin,admin,editor')->group(function () {
+        // Articles
+        Route::post('/admin/articles', [ArticleController::class, 'store']);
+        Route::delete('/admin/articles/{article}', [ArticleController::class, 'destroy']);
+    });
+
+    Route::middleware('role:superadmin,admin')->group(function () {
+        Route::get('/admin/testimonials', [TestimonialController::class, 'adminIndex']);
+        Route::post('/admin/testimonials', [TestimonialController::class, 'store']);
+        Route::put('/admin/testimonials/{testimonial}', [TestimonialController::class, 'update']);
+        Route::delete('/admin/testimonials/{testimonial}', [TestimonialController::class, 'destroy']);
+
+        Route::get('/admin/promos', [PromoController::class, 'adminIndex']);
+        Route::post('/admin/promos', [PromoController::class, 'store']);
+        Route::put('/admin/promos/{promo}', [PromoController::class, 'update']);
+        Route::delete('/admin/promos/{promo}', [PromoController::class, 'destroy']);
+
+        Route::post('/admin/portfolios', [PortfolioController::class, 'store']);
+        Route::put('/admin/portfolios/{portfolio}', [PortfolioController::class, 'update']);
+        Route::delete('/admin/portfolios/{portfolio}', [PortfolioController::class, 'destroy']);
+        
+        Route::delete('/admin/reviews/{bookReview}', [BookReviewController::class, 'destroy']);
+    });
+
+    // Settings and Users (superadmin only)
+    Route::middleware('role:superadmin')->group(function () {
+        Route::get('/admin/users', [UserController::class, 'index']);
+        Route::post('/admin/users', [UserController::class, 'store']);
+        Route::put('/admin/users/{user}', [UserController::class, 'update']);
+        Route::delete('/admin/users/{user}', [UserController::class, 'destroy']);
+
+        Route::post('/admin/settings', [SettingController::class, 'update']);
     });
 });
