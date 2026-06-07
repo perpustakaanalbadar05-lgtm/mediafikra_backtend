@@ -96,6 +96,9 @@ class BookController extends Controller
 
     public function destroy(Book $book)
     {
+        if ($book->cover_image && str_starts_with($book->cover_image, '/storage/')) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete(str_replace('/storage/', '', $book->cover_image));
+        }
         $book->delete();
         return response()->json(['message' => 'Buku berhasil dihapus.']);
     }

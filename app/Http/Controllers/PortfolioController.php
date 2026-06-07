@@ -61,6 +61,9 @@ class PortfolioController extends Controller
 
     public function destroy(Portfolio $portfolio)
     {
+        if ($portfolio->cover && str_starts_with($portfolio->cover, '/storage/')) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete(str_replace('/storage/', '', $portfolio->cover));
+        }
         $portfolio->delete();
         return response()->json(['message' => 'Portfolio berhasil dihapus.']);
     }

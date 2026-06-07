@@ -25,10 +25,19 @@ class OrderController extends Controller
         ]);
 
         $book = Book::findOrFail($data['buku_id']);
+        
+        if ($book->stok < $data['qty']) {
+            return response()->json([
+                'message' => 'Stok buku tidak mencukupi.',
+                'stok_tersedia' => $book->stok
+            ], 422);
+        }
+
         $data['total'] = $book->harga * $data['qty'];
         $data['status'] = 'pending';
 
         $order = Order::create($data);
+        $book->decrement('stok', $data['qty']);
 
         return response()->json([
             'message' => 'Order berhasil dibuat.',

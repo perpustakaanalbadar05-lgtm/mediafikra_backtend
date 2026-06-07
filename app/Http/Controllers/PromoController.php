@@ -71,6 +71,9 @@ class PromoController extends Controller
 
     public function destroy(Promo $promo)
     {
+        if ($promo->thumbnail && str_starts_with($promo->thumbnail, '/storage/')) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete(str_replace('/storage/', '', $promo->thumbnail));
+        }
         $promo->delete();
         return response()->json(['message' => 'Promo/berita berhasil dihapus.']);
     }
