@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
         // ─── SETTINGS ────────────────────────────────────────────────────────
         Setting::set('hero_title', 'Wujudkan Karya Tulis Menjadi Buku Profesional');
         Setting::set('hero_subtitle', 'Media Fikra hadir sebagai mitra penerbitan terpercaya.');
-        Setting::set('contact_wa', '6281234567890');
+        Setting::set('contact_wa', '6282332975294');
         Setting::set('contact_email', 'info@mediafikra.com');
         // ─── SUPERADMIN ──────────────────────────────────────────────────────
         User::create([

@@ -60,7 +60,7 @@ class OrderController extends Controller
 
     private function buildWhatsAppUrl(Order $order, Book $book): string
     {
-        $csNumber = config('app.cs_whatsapp', '6281234567890');
+        $csNumber = config('app.cs_whatsapp', '6282332975294');
         $message = "Halo Media Fikra, saya ingin memesan buku:\n\n";
         $message .= "📚 *Buku*: {$book->judul}\n";
         $message .= "👤 *Nama*: {$order->nama_pembeli}\n";
