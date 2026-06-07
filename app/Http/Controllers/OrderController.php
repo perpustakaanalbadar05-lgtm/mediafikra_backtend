@@ -22,8 +22,6 @@ class OrderController extends Controller
             'buku_id' => 'required|exists:books,id',
             'qty' => 'required|integer|min:1',
             'catatan' => 'nullable|string',
-            'kurir' => 'nullable|string',
-            'ongkir' => 'nullable|numeric',
         ]);
 
         $book = Book::findOrFail($data['buku_id']);
@@ -68,14 +66,7 @@ class OrderController extends Controller
         $message .= "👤 *Nama*: {$order->nama_pembeli}\n";
         $message .= "📱 *WhatsApp*: {$order->whatsapp}\n";
         $message .= "📦 *Jumlah*: {$order->qty} eks\n";
-        if ($order->kurir) {
-            $message .= "🚚 *Kurir*: " . strtoupper($order->kurir) . "\n";
-            $message .= "💸 *Ongkir*: Rp " . number_format($order->ongkir, 0, ',', '.') . "\n";
-            $message .= "💰 *Subtotal*: Rp " . number_format($order->total, 0, ',', '.') . "\n";
-            $message .= "💳 *Total Bayar*: Rp " . number_format($order->total + $order->ongkir, 0, ',', '.') . "\n";
-        } else {
-            $message .= "💰 *Total*: Rp " . number_format($order->total, 0, ',', '.') . "\n";
-        }
+        $message .= "💰 *Total*: Rp " . number_format($order->total, 0, ',', '.') . "\n";
         $message .= "📍 *Alamat*: {$order->alamat}\n";
         if ($order->catatan) {
             $message .= "📝 *Catatan*: {$order->catatan}\n";
