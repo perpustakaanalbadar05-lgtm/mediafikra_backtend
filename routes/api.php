@@ -13,6 +13,8 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\BookReviewController;
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\OngkirController;
+use App\Http\Controllers\VoucherController;
 
 // ─── PUBLIC ROUTES ───────────────────────────────────────────────────────────
 
@@ -51,6 +53,11 @@ Route::get('/portfolios/{portfolio}', [PortfolioController::class, 'show']);
 
 // Order / Checkout (public — user creates an order)
 Route::post('/orders', [OrderController::class, 'store']);
+
+// Ongkir (public)
+Route::get('/ongkir/provinces', [OngkirController::class, 'getProvinces']);
+Route::get('/ongkir/cities/{province}', [OngkirController::class, 'getCities']);
+Route::post('/ongkir/calculate', [OngkirController::class, 'calculate']);
 
 // ─── PROTECTED ROUTES (require Sanctum token) ─────────────────────────────
 
@@ -111,6 +118,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/admin/portfolios/{portfolio}', [PortfolioController::class, 'destroy']);
         
         Route::delete('/admin/reviews/{bookReview}', [BookReviewController::class, 'destroy']);
+        
+        Route::get('/admin/vouchers', [VoucherController::class, 'index']);
+        Route::post('/admin/vouchers', [VoucherController::class, 'store']);
+        Route::put('/admin/vouchers/{voucher}', [VoucherController::class, 'update']);
+        Route::delete('/admin/vouchers/{voucher}', [VoucherController::class, 'destroy']);
     });
 
     // Settings and Users (superadmin only)
