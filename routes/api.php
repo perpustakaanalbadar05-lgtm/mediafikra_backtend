@@ -20,7 +20,7 @@ use App\Http\Controllers\ArticleController;
 Route::get('/settings', [SettingController::class, 'index']);
 
 // Auth
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
 // Books (public catalog)
 Route::get('/books', [BookController::class, 'index']);
@@ -91,6 +91,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:superadmin,admin,editor')->group(function () {
         // Articles
         Route::post('/admin/articles', [ArticleController::class, 'store']);
+        Route::put('/admin/articles/{article}', [ArticleController::class, 'update']);
         Route::delete('/admin/articles/{article}', [ArticleController::class, 'destroy']);
     });
 

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->boolean('featured')->default(false);
             $table->boolean('status_publish')->default(true);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

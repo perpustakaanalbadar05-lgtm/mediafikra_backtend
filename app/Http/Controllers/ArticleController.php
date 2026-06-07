@@ -25,6 +25,7 @@ class ArticleController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'status' => 'required|string|in:published,draft',
+            'thumbnail' => 'nullable|image|max:2048',
         ]);
         $validated['slug'] = Str::slug($validated['title']) . '-' . time();
         
@@ -37,8 +38,36 @@ class ArticleController extends Controller
         return response()->json($article, 201);
     }
 
+    public function update(Request $request, Article $article)
+    {
+        $validated = $request->validate([
+            'title' => 'sometimes|string|max:255',
+            'content' => 'sometimes|string',
+            'status' => 'sometimes|string|in:published,draft',
+            'thumbnail' => 'nullable|image|max:2048',
+        ]);
+
+        if (isset($validated['title'])) {
+            $validated['slug'] = Str::slug($validated['title']) . '-' . $article->id;
+        }
+
+        if ($request->hasFile('thumbnail')) {
+            if ($article->thumbnail && str_starts_with($article->thumbnail, '/storage/')) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete(str_replace('/storage/', '', $article->thumbnail));
+            }
+            $path = $request->file('thumbnail')->store('articles', 'public');
+            $validated['thumbnail'] = '/storage/' . $path;
+        }
+
+        $article->update($validated);
+        return response()->json($article);
+    }
+
     public function destroy(Article $article)
     {
+        if ($article->thumbnail && str_starts_with($article->thumbnail, '/storage/')) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete(str_replace('/storage/', '', $article->thumbnail));
+        }
         $article->delete();
         return response()->json(['message' => 'Article deleted']);
     }
