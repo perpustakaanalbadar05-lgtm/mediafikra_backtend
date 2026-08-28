@@ -8,6 +8,30 @@ use Illuminate\Support\Str;
 
 class PromoController extends Controller
 {
+    private function saveImage($file, string $subdir): string
+    {
+        $dir = public_path('img/' . $subdir);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
+        $file->move($dir, $filename);
+        return '/img/' . $subdir . '/' . $filename;
+    }
+
+    private function deleteImage(?string $path): void
+    {
+        if (!$path) return;
+        if (str_starts_with($path, '/img/')) {
+            $fullPath = public_path(ltrim($path, '/'));
+            if (file_exists($fullPath)) @unlink($fullPath);
+        }
+        if (str_starts_with($path, '/storage/')) {
+            \Illuminate\Support\Facades\Storage::disk('public')
+                ->delete(str_replace('/storage/', '', $path));
+        }
+    }
+
     public function index(Request $request)
     {
         $query = Promo::where('status_publish', true);
@@ -22,16 +46,15 @@ class PromoController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'judul' => 'required|string|max:255',
-            'isi' => 'required|string',
-            'thumbnail' => 'nullable|image|max:2048',
+            'judul'          => 'required|string|max:255',
+            'isi'            => 'required|string',
+            'thumbnail'      => 'nullable|image|max:2048',
             'status_publish' => 'boolean',
-            'type' => 'required|in:promo,berita',
+            'type'           => 'required|in:promo,berita',
         ]);
 
         if ($request->hasFile('thumbnail')) {
-            $path = $request->file('thumbnail')->store('promos', 'public');
-            $data['thumbnail'] = '/storage/' . $path;
+            $data['thumbnail'] = $this->saveImage($request->file('thumbnail'), 'promos');
         }
 
         $data['slug'] = Str::slug($request->judul) . '-' . uniqid();
@@ -46,19 +69,16 @@ class PromoController extends Controller
     public function update(Request $request, Promo $promo)
     {
         $data = $request->validate([
-            'judul' => 'sometimes|string|max:255',
-            'isi' => 'sometimes|string',
-            'thumbnail' => 'nullable|image|max:2048',
+            'judul'          => 'sometimes|string|max:255',
+            'isi'            => 'sometimes|string',
+            'thumbnail'      => 'nullable|image|max:2048',
             'status_publish' => 'boolean',
-            'type' => 'sometimes|in:promo,berita',
+            'type'           => 'sometimes|in:promo,berita',
         ]);
 
         if ($request->hasFile('thumbnail')) {
-            if ($promo->thumbnail && str_starts_with($promo->thumbnail, '/storage/')) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete(str_replace('/storage/', '', $promo->thumbnail));
-            }
-            $path = $request->file('thumbnail')->store('promos', 'public');
-            $data['thumbnail'] = '/storage/' . $path;
+            $this->deleteImage($promo->thumbnail);
+            $data['thumbnail'] = $this->saveImage($request->file('thumbnail'), 'promos');
         }
 
         if (isset($data['judul'])) {
@@ -71,9 +91,7 @@ class PromoController extends Controller
 
     public function destroy(Promo $promo)
     {
-        if ($promo->thumbnail && str_starts_with($promo->thumbnail, '/storage/')) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete(str_replace('/storage/', '', $promo->thumbnail));
-        }
+        $this->deleteImage($promo->thumbnail);
         $promo->delete();
         return response()->json(['message' => 'Promo/berita berhasil dihapus.']);
     }

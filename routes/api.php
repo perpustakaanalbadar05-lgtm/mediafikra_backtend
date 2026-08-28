@@ -123,3 +123,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/settings', [SettingController::class, 'update']);
     });
 });
+
+// Fallback route to serve files directly if symlink fails (for /api/storage/... URLs)
+Route::get('/storage/{folder}/{file}', function ($folder, $file) {
+    $path = storage_path('app/public/' . $folder . '/' . $file);
+    if (!file_exists($path)) {
+        abort(404);
+    }
+    
+    $mimeType = \Illuminate\Support\Facades\File::mimeType($path);
+    return response()->file($path, [
+        'Content-Type' => $mimeType
+    ]);
+})->where('file', '.*');

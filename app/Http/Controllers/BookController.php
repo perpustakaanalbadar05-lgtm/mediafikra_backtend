@@ -8,6 +8,36 @@ use Illuminate\Support\Str;
 
 class BookController extends Controller
 {
+    /**
+     * Simpan gambar langsung ke public/img/{subdir}/ agar bisa diakses
+     * Apache tanpa perlu symlink (solusi untuk cPanel shared hosting).
+     */
+    private function saveImage($file, string $subdir): string
+    {
+        $dir = public_path('img/' . $subdir);
+        if (!is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+        $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
+        $file->move($dir, $filename);
+        return '/img/' . $subdir . '/' . $filename;
+    }
+
+    private function deleteImage(?string $path): void
+    {
+        if (!$path) return;
+        // Hapus dari public/img/
+        if (str_starts_with($path, '/img/')) {
+            $fullPath = public_path(ltrim($path, '/'));
+            if (file_exists($fullPath)) @unlink($fullPath);
+        }
+        // Legacy: hapus dari storage jika masih ada
+        if (str_starts_with($path, '/storage/')) {
+            \Illuminate\Support\Facades\Storage::disk('public')
+                ->delete(str_replace('/storage/', '', $path));
+        }
+    }
+
     public function index(Request $request)
     {
         $query = Book::query();
@@ -30,20 +60,19 @@ class BookController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'judul' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'sinopsis' => 'nullable|string',
-            'harga' => 'required|integer|min:0',
-            'stok' => 'required|integer|min:0',
-            'cover_image' => 'nullable|image|max:2048', // 2MB max
-            'kategori' => 'nullable|string|max:100',
-            'featured' => 'boolean',
+            'judul'          => 'required|string|max:255',
+            'deskripsi'      => 'nullable|string',
+            'sinopsis'       => 'nullable|string',
+            'harga'          => 'required|integer|min:0',
+            'stok'           => 'required|integer|min:0',
+            'cover_image'    => 'nullable|image|max:2048',
+            'kategori'       => 'nullable|string|max:100',
+            'featured'       => 'boolean',
             'status_publish' => 'boolean',
         ]);
 
         if ($request->hasFile('cover_image')) {
-            $path = $request->file('cover_image')->store('covers', 'public');
-            $data['cover_image'] = '/storage/' . $path;
+            $data['cover_image'] = $this->saveImage($request->file('cover_image'), 'covers');
         }
 
         $data['slug'] = Str::slug($request->judul) . '-' . uniqid();
@@ -66,24 +95,20 @@ class BookController extends Controller
     public function update(Request $request, Book $book)
     {
         $data = $request->validate([
-            'judul' => 'sometimes|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'sinopsis' => 'nullable|string',
-            'harga' => 'sometimes|integer|min:0',
-            'stok' => 'sometimes|integer|min:0',
-            'cover_image' => 'nullable|image|max:2048',
-            'kategori' => 'nullable|string|max:100',
-            'featured' => 'boolean',
+            'judul'          => 'sometimes|string|max:255',
+            'deskripsi'      => 'nullable|string',
+            'sinopsis'       => 'nullable|string',
+            'harga'          => 'sometimes|integer|min:0',
+            'stok'           => 'sometimes|integer|min:0',
+            'cover_image'    => 'nullable|image|max:2048',
+            'kategori'       => 'nullable|string|max:100',
+            'featured'       => 'boolean',
             'status_publish' => 'boolean',
         ]);
 
         if ($request->hasFile('cover_image')) {
-            // Delete old if exists
-            if ($book->cover_image && str_starts_with($book->cover_image, '/storage/')) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete(str_replace('/storage/', '', $book->cover_image));
-            }
-            $path = $request->file('cover_image')->store('covers', 'public');
-            $data['cover_image'] = '/storage/' . $path;
+            $this->deleteImage($book->cover_image);
+            $data['cover_image'] = $this->saveImage($request->file('cover_image'), 'covers');
         }
 
         if (isset($data['judul'])) {
@@ -96,14 +121,11 @@ class BookController extends Controller
 
     public function destroy(Book $book)
     {
-        if ($book->cover_image && str_starts_with($book->cover_image, '/storage/')) {
-            \Illuminate\Support\Facades\Storage::disk('public')->delete(str_replace('/storage/', '', $book->cover_image));
-        }
+        $this->deleteImage($book->cover_image);
         $book->delete();
         return response()->json(['message' => 'Buku berhasil dihapus.']);
     }
 
-    // Admin: semua buku termasuk yang tidak publish
     public function adminIndex()
     {
         return response()->json(Book::latest()->get());
