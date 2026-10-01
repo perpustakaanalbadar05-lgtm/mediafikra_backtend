@@ -69,6 +69,11 @@ class BookController extends Controller
             'kategori'       => 'nullable|string|max:100',
             'featured'       => 'boolean',
             'status_publish' => 'boolean',
+            'penulis'        => 'nullable|string|max:255',
+            'isbn'           => 'nullable|string|max:255',
+            'tahun_terbit'   => 'nullable|string|max:4',
+            'halaman'        => 'nullable|integer|min:0',
+            'penerbit'       => 'nullable|string|max:255',
         ]);
 
         if ($request->hasFile('cover_image')) {
@@ -104,6 +109,11 @@ class BookController extends Controller
             'kategori'       => 'nullable|string|max:100',
             'featured'       => 'boolean',
             'status_publish' => 'boolean',
+            'penulis'        => 'nullable|string|max:255',
+            'isbn'           => 'nullable|string|max:255',
+            'tahun_terbit'   => 'nullable|string|max:4',
+            'halaman'        => 'nullable|integer|min:0',
+            'penerbit'       => 'nullable|string|max:255',
         ]);
 
         if ($request->hasFile('cover_image')) {
