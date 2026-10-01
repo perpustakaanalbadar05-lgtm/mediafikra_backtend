@@ -11,6 +11,7 @@ class Book extends Model
     protected $fillable = [
         'judul', 'slug', 'deskripsi', 'sinopsis', 'harga', 'stok',
         'cover_image', 'kategori', 'featured', 'status_publish',
+        'penulis', 'isbn', 'tahun_terbit', 'halaman', 'penerbit',
     ];
 
     protected $casts = [

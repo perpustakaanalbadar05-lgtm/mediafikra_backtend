@@ -42,6 +42,11 @@ class DatabaseSeeder extends Seeder
                 'kategori' => 'Penulisan',
                 'featured' => true,
                 'status_publish' => true,
+                'penulis' => 'Dr. Mansur, M.H.I.',
+                'isbn' => 'dalam proses',
+                'tahun_terbit' => '2026',
+                'halaman' => 123,
+                'penerbit' => 'Alifba Media',
             ],
             [
                 'judul' => 'Metodologi Penelitian Kuantitatif',
